@@ -6,7 +6,7 @@ import { Image } from 'expo-image'
 import { Link } from 'expo-router'
 import { Platform, StyleSheet } from 'react-native'
 
-export default function HomeScreen() {
+export default function Home() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}

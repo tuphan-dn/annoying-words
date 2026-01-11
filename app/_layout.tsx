@@ -9,7 +9,7 @@ import { StatusBar } from 'expo-status-bar'
 import 'react-native-reanimated'
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: '(home)',
 }
 
 export default function RootLayout() {
@@ -18,7 +18,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen
           name="modal"
           options={{ presentation: 'modal', title: 'Modal' }}
