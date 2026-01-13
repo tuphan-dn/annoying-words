@@ -3,9 +3,12 @@ import LookUpBar from '@/components/look-up-bar'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { Link } from 'expo-router'
+import { useState } from 'react'
 import { Platform, StyleSheet, View } from 'react-native'
 
 export default function Home() {
+  const [text, onChangeText] = useState('')
+
   return (
     <View style={styles.stackContainer}>
       <ThemedView style={styles.titleContainer} transparent>
@@ -108,7 +111,11 @@ export default function Home() {
           width: '100%',
         }}
       >
-        <LookUpBar />
+        <LookUpBar
+          value={text}
+          onChangeText={onChangeText}
+          onActivate={() => console.log('trigger')}
+        />
       </View>
     </View>
   )

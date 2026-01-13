@@ -3,7 +3,6 @@ import {
   LiquidGlassContainerView,
   LiquidGlassView,
 } from '@callstack/liquid-glass'
-import { useState } from 'react'
 import { Text, TextInput, View } from 'react-native'
 import {
   Gesture,
@@ -16,31 +15,58 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 
 const AnimatedLiquidGlassView =
   Animated.createAnimatedComponent(LiquidGlassView)
 const AnimatedView = Animated.createAnimatedComponent(View)
+const AnimatedText = Animated.createAnimatedComponent(Text)
 
-export default function LookUpBar() {
-  const [word, setWord] = useState('')
+const SPACING = 24
+const DRAGGER_SIZE = 80
+
+export type LookUpBarProps = {
+  value?: string
+  onChangeText?: (text: string) => void
+  onActivate?: (text: string) => void
+}
+
+export default function LookUpBar({
+  value = '',
+  onChangeText = () => {},
+  onActivate = () => {},
+}: LookUpBarProps) {
   const dragging = useSharedValue(false)
+  const activated = useSharedValue(false)
   const translateX = useSharedValue(0)
+  const inputWidth = useSharedValue(0)
+
   const pan = Gesture.Pan()
     .onUpdate(({ translationX }) => {
-      const x = Math.max(translationX, 0)
+      const x = Math.min(Math.max(translationX, 0), inputWidth.value)
       translateX.value = x
       dragging.value = x > 0
+      if (x >= inputWidth.value) {
+        activated.value = true
+        // Rumble the phone here
+      }
     })
     .onEnd(() => {
       translateX.value = withSpring(0)
       dragging.value = false
+      if (activated.value) {
+        scheduleOnRN(onActivate, value)
+        activated.value = false
+      }
     })
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const draggerStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }))
-
-  const widthStyle = useAnimatedStyle(() => ({
+  const textStyle = useAnimatedStyle(() => ({
+    color: activated.value ? 'rgba(0, 122, 255, 1)' : 'rgba(255, 255, 255, 1)',
+  }))
+  const draggerContainerStyle = useAnimatedStyle(() => ({
     width: dragging.value ? 0 : 'auto',
   }))
 
@@ -53,14 +79,14 @@ export default function LookUpBar() {
           justifyContent: 'center',
           width: '100%',
         }}
-        spacing={24}
+        spacing={SPACING}
       >
         <GestureDetector gesture={pan}>
-          <AnimatedView style={widthStyle}>
+          <AnimatedView style={draggerContainerStyle}>
             <AnimatedLiquidGlassView
               style={[
                 {
-                  height: 80,
+                  height: DRAGGER_SIZE,
                   aspectRatio: 1,
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -68,27 +94,34 @@ export default function LookUpBar() {
                   borderRadius: '100%',
                 },
                 !isLiquidGlassSupported && {
-                  backgroundColor: 'rgba(255,255,255,0.5)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
                 },
-                animatedStyle,
+                draggerStyle,
               ]}
               effect="clear"
               interactive
             >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: 700,
-                  color: 'rgba(0,0,0,0.6)',
-                }}
+              <AnimatedText
+                style={[
+                  {
+                    fontSize: 24,
+                    fontWeight: 700,
+                    // color: 'rgba(0, 0, 0, 0.6)',
+                  },
+                  textStyle,
+                ]}
               >
                 S
-              </Text>
+              </AnimatedText>
             </AnimatedLiquidGlassView>
           </AnimatedView>
         </GestureDetector>
         <AnimatedLiquidGlassView
           layout={LinearTransition.springify().damping(60).stiffness(600)}
+          onLayout={(e) => {
+            inputWidth.value =
+              e.nativeEvent.layout.width - DRAGGER_SIZE - SPACING
+          }}
           style={[
             {
               flex: 1,
@@ -98,7 +131,7 @@ export default function LookUpBar() {
               gap: 16,
             },
             !isLiquidGlassSupported && {
-              backgroundColor: 'rgba(255,255,255,0.5)',
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
             },
           ]}
           effect="clear"
@@ -110,11 +143,11 @@ export default function LookUpBar() {
               fontSize: 24,
               fontWeight: 700,
             }}
-            placeholder="Enter text"
-            value={word}
-            onChangeText={setWord}
+            placeholder="..."
+            value={value}
+            onChangeText={onChangeText}
             autoCapitalize="none"
-            placeholderTextColor="rgba(0,0,0,0.6)"
+            placeholderTextColor="rgba(0, 0, 0, 0.6)"
             autoCorrect={false}
             spellCheck={false}
             autoComplete="off"
