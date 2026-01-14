@@ -1,9 +1,11 @@
+import { useThemeColor } from '@/hooks/use-theme'
 import {
   isLiquidGlassSupported,
   LiquidGlassContainerView,
   LiquidGlassView,
 } from '@callstack/liquid-glass'
-import { Text, TextInput, View } from 'react-native'
+import { ArrowRight } from 'lucide-react-native'
+import { TextInput, View } from 'react-native'
 import {
   Gesture,
   GestureDetector,
@@ -20,7 +22,6 @@ import { scheduleOnRN } from 'react-native-worklets'
 const AnimatedLiquidGlassView =
   Animated.createAnimatedComponent(LiquidGlassView)
 const AnimatedView = Animated.createAnimatedComponent(View)
-const AnimatedText = Animated.createAnimatedComponent(Text)
 
 const SPACING = 24
 const DRAGGER_SIZE = 80
@@ -41,6 +42,8 @@ export default function LookUpBar({
   const translateX = useSharedValue(0)
   const inputWidth = useSharedValue(0)
 
+  const color = useThemeColor('text')
+
   const pan = Gesture.Pan()
     .onUpdate(({ translationX }) => {
       const x = Math.min(Math.max(translationX, 0), inputWidth.value)
@@ -55,16 +58,13 @@ export default function LookUpBar({
       translateX.value = withSpring(0)
       dragging.value = false
       if (activated.value) {
-        scheduleOnRN(onActivate, value)
+        if (!!value) scheduleOnRN(onActivate, value)
         activated.value = false
       }
     })
 
   const draggerStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
-  }))
-  const textStyle = useAnimatedStyle(() => ({
-    color: activated.value ? 'rgba(0, 122, 255, 1)' : 'rgba(255, 255, 255, 1)',
   }))
   const draggerContainerStyle = useAnimatedStyle(() => ({
     width: dragging.value ? 0 : 'auto',
@@ -74,10 +74,10 @@ export default function LookUpBar({
     <GestureHandlerRootView style={{ width: '100%' }}>
       <LiquidGlassContainerView
         style={{
+          width: '100%',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '100%',
         }}
         spacing={SPACING}
       >
@@ -101,18 +101,7 @@ export default function LookUpBar({
               effect="clear"
               interactive
             >
-              <AnimatedText
-                style={[
-                  {
-                    fontSize: 24,
-                    fontWeight: 700,
-                    // color: 'rgba(0, 0, 0, 0.6)',
-                  },
-                  textStyle,
-                ]}
-              >
-                S
-              </AnimatedText>
+              <ArrowRight size={48} color={color} />
             </AnimatedLiquidGlassView>
           </AnimatedView>
         </GestureDetector>
@@ -128,7 +117,6 @@ export default function LookUpBar({
               height: '100%',
               borderRadius: '100%',
               padding: 24,
-              gap: 16,
             },
             !isLiquidGlassSupported && {
               backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -143,7 +131,7 @@ export default function LookUpBar({
               fontSize: 24,
               fontWeight: 700,
             }}
-            placeholder="..."
+            placeholder="Enter the word"
             value={value}
             onChangeText={onChangeText}
             autoCapitalize="none"
