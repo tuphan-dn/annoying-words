@@ -8,12 +8,14 @@ import { StyleSheet, TextInput } from 'react-native'
 export type SearchInputProps = {
   text?: string
   onChangeText?: (text: string) => void
+  onSubmitText?: (text: string) => void
   effect?: LiquidGlassViewProps['effect']
 }
 
 export default function SearchInput({
   text = '',
   onChangeText = () => {},
+  onSubmitText = () => {},
   effect = 'regular',
 }: SearchInputProps) {
   const theme = useTheme()
@@ -30,6 +32,7 @@ export default function SearchInput({
         placeholder="annoying words"
         value={text}
         onChangeText={onChangeText}
+        onSubmitEditing={(e) => onSubmitText(e.nativeEvent.text)}
         autoCapitalize="none"
         placeholderTextColor="rgba(0, 0, 0, 0.6)"
         autoCorrect={false}

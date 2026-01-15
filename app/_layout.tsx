@@ -1,4 +1,5 @@
 import { useTheme } from '@/hooks/use-theme'
+import DictProvider from '@/provider/dict.provider'
 import {
   DarkTheme,
   DefaultTheme,
@@ -18,16 +19,18 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
-      <SafeAreaProvider>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: 'modal', title: 'Modal' }}
-          />
-        </Stack>
-        <StatusBar style="auto" />
-      </SafeAreaProvider>
+      <DictProvider>
+        <SafeAreaProvider>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="modal"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
+          </Stack>
+          <StatusBar style="auto" />
+        </SafeAreaProvider>
+      </DictProvider>
     </ThemeProvider>
   )
 }

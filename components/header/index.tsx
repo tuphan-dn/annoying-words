@@ -8,15 +8,22 @@ const EFFECT = 'clear'
 export type HeaderProps = {
   text?: string
   onChangeText?: (text: string) => void
+  onSubmitText?: (text: string) => void
 }
 
 export default function Header({
   text = '',
   onChangeText = () => {},
+  onSubmitText = () => {},
 }: HeaderProps) {
   return (
     <LiquidGlassContainerView style={styles.header} spacing={24}>
-      <SearchInput text={text} onChangeText={onChangeText} effect={EFFECT} />
+      <SearchInput
+        text={text}
+        onChangeText={onChangeText}
+        onSubmitText={onSubmitText}
+        effect={EFFECT}
+      />
       <SyncButton effect={EFFECT} />
     </LiquidGlassContainerView>
   )

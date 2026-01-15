@@ -1,11 +1,30 @@
 import Header from '@/components/header'
-import { useState } from 'react'
+import Vocab from '@/components/vocab'
+import { useUpsertVocab, useVocabs } from '@/provider/dict.provider'
+import { useCallback, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function Home() {
   const [text, onText] = useState('')
   const insets = useSafeAreaInsets()
+  const upsertVocab = useUpsertVocab()
+
+  const onSubmitText = useCallback(
+    (value: string) => {
+      upsertVocab(value, {
+        content: 'hello world',
+        fromLang: 'en',
+        toLang: 'vi',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        point: 0,
+      })
+    },
+    [upsertVocab],
+  )
+
+  const vocabs = useVocabs()
 
   return (
     <View style={styles.mainContainer}>
@@ -21,12 +40,16 @@ export default function Home() {
           },
         ]}
       >
-        <Header text={text} onChangeText={onText} />
+        <Header text={text} onChangeText={onText} onSubmitText={onSubmitText} />
       </View>
       <ScrollView
         contentContainerStyle={styles.stackContainer}
         showsVerticalScrollIndicator={false}
-      ></ScrollView>
+      >
+        {vocabs.map((vocab) => (
+          <Vocab key={vocab} text={vocab} />
+        ))}
+      </ScrollView>
     </View>
   )
 }
@@ -37,26 +60,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   stackContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 96,
+    paddingHorizontal: 32,
+    paddingVertical: 148,
     flexDirection: 'column',
-    alignItems: 'center',
+    alignContent: 'flex-start',
     gap: 16,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 })
